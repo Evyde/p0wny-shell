@@ -548,10 +548,21 @@ if (isset($_GET["feature"])) {
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState === 4 && xhr.status === 200) {
                         try {
-                            var responseJson = JSON.parse(xhr.responseText);
-                            callback(responseJson);
+                            var responseText = xhr.responseText;
+                            // getting JSON part (first { to last })
+                            var jsonStart = responseText.indexOf('{');
+                            var jsonEnd = responseText.lastIndexOf('}');
+                            
+                            if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+                                var jsonText = responseText.substring(jsonStart, jsonEnd + 1);
+                                var responseJson = JSON.parse(jsonText);
+                                callback(responseJson);
+                            } else {
+                                throw new Error("No valid JSON found in response");
+                            }
                         } catch (error) {
-                            alert("Error while parsing response: " + error);
+                            console.error("Response text:", xhr.responseText);
+                            alert("Invalid JSON response. Check console for details.\nError: " + error);
                         }
                     }
                 };
@@ -601,5 +612,4 @@ if (isset($_GET["feature"])) {
             </div>
         </div>
     </body>
-
 </html>
